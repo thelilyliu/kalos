@@ -1,0 +1,143 @@
+{{define "my-template"}}
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+{{template "head" .}}
+
+<body>
+
+	
+
+	{{template "script" .}}
+
+	<script type="text/javascript">
+		$(document).ready(function() {
+			
+			page('/edit', edit)
+			page('/manage', manage);
+			page('*', notFound);
+			page();
+		});
+
+		var pollID = '';
+
+		/*
+		  ========================================
+		  Manage
+		  ========================================
+		*/
+
+		function manage() {
+
+		}
+
+		function loadPolls() {
+			$.ajax({
+                type: 'GET',
+                url: '/loadPolls',
+                dataType: 'json',
+                cache: false
+            }).done(function(json, textStatus, jqXHr) {
+            	console.log('load polls');
+            }).fail(function(jqXHr, textStatus, errorThrown) {
+                handleAjaxError(jqXHr, textStatus);
+            }).always(function() {});
+		}
+
+		function insertPoll(data) {
+			$.ajax({
+	            type: 'POST',
+	            url: '/insertPoll',
+	            data: data,
+	            contentType: 'application/json; charset=utf-8',
+	            dataType: 'json',
+	            cache: false
+	        }).done(function(json, textStatus, jqXHr) {
+	        	console.log('insert poll');
+	        }).fail(function(jqXHr, textStatus, errorThrown) {
+	            handleAjaxError(jqXHr, textStatus);
+	        }).always(function() {});
+		}
+
+		function deletePoll(data) {
+			$.ajax({
+	            type: 'DELETE',
+	            url: '/deletePoll',
+	            data: data,
+	            contentType: 'application/json; charset=utf-8',
+	            dataType: 'json',
+	            cache: false
+	        }).done(function(json, textStatus, jqXHr) {
+	        	console.log('delete poll');
+	        }).fail(function(jqXHr, textStatus, errorThrown) {
+	            handleAjaxError(jqXHr, textStatus);
+	        }).always(function() {});
+		}
+
+		function getResults() {
+			$.ajax({
+                type: 'GET',
+                url: '/getResults/' + pollID,
+                dataType: 'json',
+                cache: false
+            }).done(function(json, textStatus, jqXHr) {
+            	console.log('get results');
+            }).fail(function(jqXHr, textStatus, errorThrown) {
+                handleAjaxError(jqXHr, textStatus);
+            }).always(function() {});
+		}
+
+		function manageEventHandler() {
+			
+		}
+
+		/*
+		  ========================================
+		  Edit
+		  ========================================
+		*/
+
+		function edit() {
+
+		}
+
+		function loadPoll() {
+			$.ajax({
+                type: 'GET',
+                url: '/loadPoll/' + pollID,
+                dataType: 'json',
+                cache: false
+            }).done(function(json, textStatus, jqXHr) {
+            	console.log('load poll');
+            }).fail(function(jqXHr, textStatus, errorThrown) {
+                handleAjaxError(jqXHr, textStatus);
+            }).always(function() {});
+		}
+
+		function updatePoll(data) {
+			$.ajax({
+	            type: 'POST',
+	            url: '/updatePoll/' + pollID,
+	            data: data,
+	            contentType: 'application/json; charset=utf-8',
+	            dataType: 'json',
+	            cache: false
+	        }).done(function(json, textStatus, jqXHr) {
+	        	console.log('update poll');
+	        }).fail(function(jqXHr, textStatus, errorThrown) {
+	            handleAjaxError(jqXHr, textStatus);
+	        }).always(function() {});
+		}
+
+		function editEventHandler() {
+		    
+		}
+	</script>
+
+</body>
+
+</html>
+
+{{end}}

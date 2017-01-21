@@ -1,0 +1,85 @@
+{{define "my-template"}}
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+{{template "head" .}}
+
+<body>
+
+	{{template "script" .}}
+
+	<script type="text/javascript">
+		$(document).ready(function() {
+			
+			page('/poll', poll)
+			page('/', home);
+			page('*', notFound);
+			page();
+		});
+		
+		var pollID = '';
+
+		/*
+		  ========================================
+		  Home
+		  ========================================
+		*/
+
+		function home() {
+
+		}
+
+		function homeEventHandler() {
+
+		}
+
+		/*
+		  ========================================
+		  Poll
+		  ========================================
+		*/
+
+		function poll() {
+
+		}
+
+		function loadPoll() {
+			$.ajax({
+                type: 'GET',
+                url: '/loadPoll/' + pollID,
+                dataType: 'json',
+                cache: false
+            }).done(function(json, textStatus, jqXHr) {
+            	console.log('load poll');
+            }).fail(function(jqXHr, textStatus, errorThrown) {
+                handleAjaxError(jqXHr, textStatus);
+            }).always(function() {});
+		}
+
+		function submitResponse(data) {
+			$.ajax({
+	            type: 'POST',
+	            url: '/submitResponse/' + pollID,
+	            data: data,
+	            contentType: 'application/json; charset=utf-8',
+	            dataType: 'json',
+	            cache: false
+	        }).done(function(json, textStatus, jqXHr) {
+	        	console.log('submit response');
+	        }).fail(function(jqXHr, textStatus, errorThrown) {
+	            handleAjaxError(jqXHr, textStatus);
+	        }).always(function() {});
+		}
+
+		function pollEventHandler() {
+		    
+		}
+	</script>
+
+</body>
+
+</html>
+
+{{end}}
