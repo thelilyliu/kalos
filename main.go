@@ -16,6 +16,15 @@ type Page struct {
 	Viewer string
 }
 
+type BasicPoll struct {
+	Entries []BasicEntry `json:"entries"`
+}
+
+type BasicEntry struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
 type Error struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
@@ -54,8 +63,11 @@ func main() {
 	router.Delete("/deletePoll/:pollID", deletePoll)
 
 	// other
+	router.Post("/submitCode", submitCode)
 	router.Post("/submitResponse/:pollID", submitResponse)
 	router.Get("/getResults/:pollID", getResults)
+
+	router.Get("/createPoll", createPoll)
 
 	// pages
 	router.Get("/edit", viewAdmin)
@@ -66,6 +78,28 @@ func main() {
 	log.Println("Listening...")
 	if err := http.ListenAndServe(":2323", router); err != nil {
 		log.Println(err)
+	}
+}
+
+func createPoll(w http.ResponseWriter, r *http.Request) {
+	log.Println("=== create ===")
+	returnCode := 0
+
+	basicPoll := new(BasicPoll)
+
+	if err := json.NewDecoder(r.Body).Decode(basicPoll); err != nil {
+		returnCode = 1
+	}
+
+	if returnCode == 0 {
+		if err := json.NewEncoder(w).Encode(true); err != nil {
+			returnCode = 3
+		}
+	}
+
+	// error handling
+	if returnCode != 0 {
+		handleError(returnCode, errorStatusCode, "Poll could not be created.", w)
 	}
 }
 
@@ -276,6 +310,39 @@ func deletePoll(w http.ResponseWriter, r *http.Request) {
 
 /*
   ========================================
+  Submit Code
+  ========================================
+*/
+
+func submitCode(w http.ResponseWriter, r *http.Request) {
+	returnCode := 0
+
+	poll := new(Poll)
+
+	if err := json.NewDecoder(r.Body).Decode(poll); err != nil {
+		returnCode = 1
+	}
+
+	if returnCode == 0 {
+		if err := submitCodeDB(poll); err != nil {
+			returnCode = 2
+		}
+	}
+
+	if returnCode == 0 {
+		if err := json.NewEncoder(w).Encode(poll); err != nil {
+			returnCode = 3
+		}
+	}
+
+	// error handling
+	if returnCode != 0 {
+		handleError(returnCode, errorStatusCode, "Code could not be submitted.", w)
+	}
+}
+
+/*
+  ========================================
   Submit Response
   ========================================
 */
@@ -283,23 +350,21 @@ func deletePoll(w http.ResponseWriter, r *http.Request) {
 func submitResponse(w http.ResponseWriter, r *http.Request) {
 	returnCode := 0
 
-	poll := new(Poll)
-	poll.ID = vestigo.Param(r, "pollID")
+	response := new(Response)
+	pollID := vestigo.Param(r, "pollID")
 
-	if err := json.NewDecoder(r.Body).Decode(poll); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(response); err != nil {
 		returnCode = 1
 	}
 
-	/*
-		if returnCode == 0 {
-			if err := submitResponseDB(poll); err != nil {
-				returnCode = 2
-			}
+	if returnCode == 0 {
+		if err := submitResponseDB(pollID, response); err != nil {
+			returnCode = 2
 		}
-	*/
+	}
 
 	if returnCode == 0 {
-		if err := json.NewEncoder(w).Encode(poll); err != nil {
+		if err := json.NewEncoder(w).Encode(response); err != nil {
 			returnCode = 3
 		}
 	}

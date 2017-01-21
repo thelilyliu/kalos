@@ -1,7 +1,32 @@
+body {
+	background-color: #fcfcfc;
+}
+
+#manage > .col {
+	
+}
+
+#manage .heading {
+	position: relative;
+}
+#manage .add-poll {
+	position: absolute;
+	right: 0;
+	top: 1.46rem;
+}
+
 .collapsible .collapsible-body {
 	position: relative;
 }
 .collapsible .fixed-action-btn {
 	position: absolute;
 	top: 23px;
+}
+
+.input-field label.active {
+	font-size: 1rem;
+}
+
+.card .row {
+	margin-bottom: 0;
 }

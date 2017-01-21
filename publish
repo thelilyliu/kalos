@@ -1,0 +1,32 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          rc.local
+# Required-Start:    $all
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:
+# Short-Description: Run /etc/rc.local if it exist
+### END INIT INFO
+
+
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+
+. /lib/init/vars.sh
+. /lib/lsb/init-functions
+
+
+case "$1" in
+    start)
+	echo "Starting uoft web app..."
+        su ubuntu -c " cd /home/ubuntu/go/src/uoft/; chmod +x uoft; /usr/bin/nohup ./uoft 2>/dev/null & "  
+        ;;
+    stop)
+	echo "Stopping uoft web app..."
+	su ubuntu -c " kill -9 $(pidof uoft) "
+        ;;
+    *)
+        echo "Usage: $0 start|stop" >&2
+        exit 3
+        ;;
+esac
+

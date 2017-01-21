@@ -8,6 +8,8 @@
 
 <body>
 
+	{{template "nav" .}}
+
 	<main>
 		<div class="container">
 			
@@ -28,7 +30,6 @@
 	<script type="text/javascript">
 		$(document).ready(function() {
 
-			page('/edit', edit)
 			page('/manage', manage);
 			page('*', notFound);
 			page();
@@ -55,12 +56,20 @@
             }).done(function(json, textStatus, jqXHr) {
             	var collapsibleHTML = `
             		<div id="manage" class="row">
-	            		<h2 class="header col s10 m8 l6">Manage Polls</h2>
-						<div class="row">
-							<div class="col s10 m8 l6">
-								<ul class="collapsible" data-collapsible="accordion"></ul>
+            			<div class="heading col s10 m8 l6">
+            				<div class="row">
+	            				<h3 class="header col s12">Manage Polls</h3>
+	            				<a class="add-poll right btn-floating btn-large waves-effect waves-light">
+									<i class="material-icons">add</i>
+								</a>
+	            			</div>
+	            		</div>
+	            		<div class="col s10 m8 l6">
+							<div class="row">
+								<div class="col s12">
+									<ul class="collapsible" data-collapsible="accordion"></ul>
+								</div>
 							</div>
-							<a class="add-poll right btn-floating btn-large waves-effect waves-light"><i class="material-icons">add</i></a>
 						</div>
 					</div>`;
 
@@ -172,7 +181,7 @@
 			$('main #manage').on('click', '.edit-poll', function() {
 				var $this = $(this).closest('li.poll');
 				pollID = $this.data('ID');
-				page('/edit');
+				loadPoll();
 			});
 
 			$('main #manage').on('click', '.delete-poll', function() {
@@ -188,10 +197,6 @@
 		  ========================================
 		*/
 
-		function edit() {
-			loadPoll();
-		}
-
 		function loadPoll() {
 			$.ajax({
                 type: 'GET',
@@ -201,7 +206,11 @@
             }).done(function(json, textStatus, jqXHr) {
             	var manageHTML = `
             		<div id="edit" class="row">
-						<h2 class="header col s10 m8 l6">Edit Poll</h2>
+            			<div class="heading col s10 m8 l6">
+            				<div class="row">
+								<h3 class="header col s12">Edit Poll</h3>
+							</div>
+            			</div>
 						<form class="col s10 m8 l6">
 							<div class="row">
 								<div class="input-field col s12">

@@ -2,6 +2,7 @@ package main
 
 import (
 	// "log"
+	"math/rand"
 	"time"
 
 	"gopkg.in/mgo.v2/bson"
@@ -77,6 +78,7 @@ func insertPollDB(poll *Poll) error {
 	poll.User = user
 	poll.ID = bson.NewObjectId().String()
 	poll.ID = poll.ID[13 : len(poll.ID)-2]
+	poll.Code = 1000 + rand.Intn(9000)
 	poll.Options = make([]string, 1)
 
 	return collection.Insert(poll)
@@ -114,4 +116,53 @@ func deletePollDB(pollID string) error {
 	selector := bson.M{"id": pollID}
 
 	return collection.Remove(selector)
+}
+
+/*
+  ========================================
+  Submit Code
+  ========================================
+*/
+
+func submitCodeDB(poll *Poll) error {
+	// create new MongoDB session
+	collection, session := initMongoDB("poll")
+	defer session.Close()
+
+	selector := bson.M{"code": poll.Code}
+
+	return collection.Find(selector).One(poll)
+}
+
+/*
+  ========================================
+  Submit Response
+  ========================================
+*/
+
+func submitResponseDB(pollID string, response *Response) error {
+	// create new MongoDB session
+	collection, session := initMongoDB("poll")
+	defer session.Close()
+
+	selector := bson.M{"id": pollID}
+	update := bson.M{"$push": bson.M{"responses": response}}
+
+	return collection.Update(selector, update)
+}
+
+/*
+  ========================================
+  Get Results
+  ========================================
+*/
+
+func getResultsDB(poll *Poll) error {
+	// create new MongoDB session
+	collection, session := initMongoDB("poll")
+	defer session.Close()
+
+	selector := bson.M{"id": poll.ID}
+
+	return collection.Find(selector).One(poll)
 }
