@@ -26,7 +26,7 @@ type Response struct {
 
 type Result struct {
 	Option string  `json:"option"`
-	Score  float64 `json:"score"`
+	Rating float64 `json:"rating"`
 }
 
 /*
@@ -149,20 +149,4 @@ func submitResponseDB(pollID string, response *Response) error {
 	update := bson.M{"$push": bson.M{"responses": response}}
 
 	return collection.Update(selector, update)
-}
-
-/*
-  ========================================
-  Get Results
-  ========================================
-*/
-
-func getResultsDB(poll *Poll) error {
-	// create new MongoDB session
-	collection, session := initMongoDB("poll")
-	defer session.Close()
-
-	selector := bson.M{"id": poll.ID}
-
-	return collection.Find(selector).One(poll)
 }

@@ -165,6 +165,19 @@
             }).always(function() {});
 		}
 
+		function generateResponses() {
+			$.ajax({
+                type: 'GET',
+                url: '/generateResponses/' + pollID,
+                dataType: 'json',
+                cache: false
+            }).done(function(json, textStatus, jqXHr) {
+            	getResults();
+            }).fail(function(jqXHr, textStatus, errorThrown) {
+                handleAjaxError(jqXHr, textStatus);
+            }).always(function() {});
+		}
+
 		function manageEventHandler() {
 			$('.collapsible').collapsible();
 
@@ -175,7 +188,8 @@
 			$('main #manage').on('click', '.info-poll', function() {
 				var $this = $(this).closest('li.poll');
 				pollID = $this.data('ID');
-				getResults();
+				generateResponses();
+				// getResults();
 			});
 
 			$('main #manage').on('click', '.edit-poll', function() {
@@ -259,7 +273,7 @@
 	            cache: false
 	        }).done(function(json, textStatus, jqXHr) {
 	        	pollID = json.id;
-	        	page('/edit');
+	        	loadPoll();
 	        }).fail(function(jqXHr, textStatus, errorThrown) {
 	            handleAjaxError(jqXHr, textStatus);
 	        }).always(function() {});

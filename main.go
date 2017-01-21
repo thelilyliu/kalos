@@ -63,7 +63,9 @@ func main() {
 	router.Post("/submitCode", submitCode)
 	router.Post("/submitResponse/:pollID", submitResponse)
 	router.Get("/getResults/:pollID", getResults)
+	router.Get("/generateResponses/:pollID", generateResponses)
 
+	// lambda
 	router.Post("/createPoll", createPoll)
 
 	// pages
@@ -431,16 +433,49 @@ func getResults(w http.ResponseWriter, r *http.Request) {
 	returnCode := 0
 
 	poll := new(Poll)
-
-	/*
-		if returnCode == 0 {
-			if err = getResultsDB(poll.Results); err != nil {
-				returnCode = 1
-			}
-		}
-	*/
+	poll.ID = vestigo.Param(r, "pollID")
 
 	if returnCode == 0 {
+		if err := loadPollDB(poll); err != nil {
+			returnCode = 1
+		}
+	}
+
+	if returnCode == 0 {
+		poll.Results = calculateResultsDB(poll.Options, poll.Responses, poll.Results)
+
+		if err := json.NewEncoder(w).Encode(poll); err != nil {
+			returnCode = 2
+		}
+	}
+
+	// error handling
+	if returnCode != 0 {
+		handleError(returnCode, errorStatusCode, "Results could not be gotten.", w)
+	}
+}
+
+/*
+  ========================================
+  Generate Responses
+  ========================================
+*/
+
+func generateResponses(w http.ResponseWriter, r *http.Request) {
+	returnCode := 0
+
+	poll := new(Poll)
+	poll.ID = vestigo.Param(r, "pollID")
+
+	if returnCode == 0 {
+		if err := loadPollDB(poll); err != nil {
+			returnCode = 1
+		}
+	}
+
+	if returnCode == 0 {
+		generateResponsesDB(poll)
+
 		if err := json.NewEncoder(w).Encode(poll); err != nil {
 			returnCode = 2
 		}
