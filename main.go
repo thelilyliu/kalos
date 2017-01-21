@@ -49,7 +49,7 @@ func main() {
 	// poll
 	router.Get("/loadPolls", loadPolls)
 	router.Get("/loadPoll/:pollID", loadPoll)
-	router.Post("/insertPoll", insertPoll)
+	router.Get("/insertPoll", insertPoll)
 	router.Post("/updatePoll/:pollID", updatePoll)
 	router.Delete("/deletePoll/:pollID", deletePoll)
 
@@ -195,19 +195,15 @@ func insertPoll(w http.ResponseWriter, r *http.Request) {
 
 	poll := new(Poll)
 
-	if err := json.NewDecoder(r.Body).Decode(poll); err != nil {
-		returnCode = 1
-	}
-
 	if returnCode == 0 {
 		if err := insertPollDB(poll); err != nil {
-			returnCode = 2
+			returnCode = 1
 		}
 	}
 
 	if returnCode == 0 {
 		if err := json.NewEncoder(w).Encode(poll); err != nil {
-			returnCode = 3
+			returnCode = 2
 		}
 	}
 
@@ -266,6 +262,12 @@ func deletePoll(w http.ResponseWriter, r *http.Request) {
 		returnCode = 1
 	}
 
+	if returnCode == 0 {
+		if err := json.NewEncoder(w).Encode(true); err != nil {
+			returnCode = 2
+		}
+	}
+
 	// error handling
 	if returnCode != 0 {
 		handleError(returnCode, errorStatusCode, "Poll could not be deleted.", w)
@@ -317,18 +319,18 @@ func submitResponse(w http.ResponseWriter, r *http.Request) {
 func getResults(w http.ResponseWriter, r *http.Request) {
 	returnCode := 0
 
-	var results []Result
+	poll := new(Poll)
 
 	/*
 		if returnCode == 0 {
-			if err = getResultsDB(&results); err != nil {
+			if err = getResultsDB(poll.Results); err != nil {
 				returnCode = 1
 			}
 		}
 	*/
 
 	if returnCode == 0 {
-		if err := json.NewEncoder(w).Encode(results); err != nil {
+		if err := json.NewEncoder(w).Encode(poll); err != nil {
 			returnCode = 2
 		}
 	}

@@ -8,13 +8,26 @@
 
 <body>
 
-	
+	<main>
+		<div class="container">
+			
+		</div>
+	</main>
+
+	<div id="modal" class="modal">
+		<div class="modal-content">
+			<h4>Results</h4>
+			<p>Code <span class="code"></span></p>
+			<p>Number <span class="number"></span></p>
+			<p>Results <span class="results"></span></p>
+		</div>
+	</div>
 
 	{{template "script" .}}
 
 	<script type="text/javascript">
 		$(document).ready(function() {
-			
+
 			page('/edit', edit)
 			page('/manage', manage);
 			page('*', notFound);
@@ -30,7 +43,7 @@
 		*/
 
 		function manage() {
-
+			loadPolls();
 		}
 
 		function loadPolls() {
@@ -40,37 +53,88 @@
                 dataType: 'json',
                 cache: false
             }).done(function(json, textStatus, jqXHr) {
-            	console.log('load polls');
+            	var collapsibleHTML = `
+            		<div id="manage" class="row">
+	            		<h2 class="header col s10 m8 l6">Manage Polls</h2>
+						<div class="row">
+							<div class="col s10 m8 l6">
+								<ul class="collapsible" data-collapsible="accordion"></ul>
+							</div>
+							<a class="add-poll right btn-floating btn-large waves-effect waves-light"><i class="material-icons">add</i></a>
+						</div>
+					</div>`;
+
+				$('main .container').html(collapsibleHTML);
+
+				var $ul = $('ul.collapsible');
+
+				$.each(json, function(i, poll) {
+					var liHTML = `
+						<li class="poll">
+							<div class="collapsible-header">
+								<i class="material-icons">filter_drama</i>` + poll.question + `
+							</div>
+							<div class="collapsible-body">
+								<form>
+									<p></p>
+								</form>
+								<div class="fixed-action-btn horizontal click-to-toggle">
+									<a class="btn-floating btn-large">
+										<i class="material-icons">menu</i>
+									</a>
+									<ul>
+										<li>
+											<a class="delete-poll btn-floating red">
+												<i class="material-icons">delete</i>
+											</a>
+										</li>
+										<li>
+											<a class="edit-poll btn-floating yellow darken-1">
+												<i class="material-icons">mode_edit</i>
+											</a>
+										</li>
+										<li>
+											<a class="info-poll btn-floating blue">
+												<i class="material-icons">info</i>
+											</a>
+										</li>
+									</ul>
+								</div>
+							</div>
+						</li>`;
+
+					$ul.append(liHTML);
+
+					var $li = $ul.find('li.poll').last();
+					var $p = $li.find('form p');
+
+					$.each(poll.options, function(i, option) {
+						var optionHTML = `
+							<input type="checkbox" disabled="disabled" />
+							<label>` + option + `</label>
+							<br /><br />`;
+
+						$p.append(optionHTML);
+					});
+
+					$li.find('p br').last().remove();
+					$li.data('ID', poll.id);
+				});
+
+            	manageEventHandler();
             }).fail(function(jqXHr, textStatus, errorThrown) {
                 handleAjaxError(jqXHr, textStatus);
             }).always(function() {});
 		}
 
-		function insertPoll(data) {
+		function deletePoll($this) {
 			$.ajax({
-	            type: 'POST',
-	            url: '/insertPoll',
-	            data: data,
-	            contentType: 'application/json; charset=utf-8',
-	            dataType: 'json',
-	            cache: false
+	           	type: 'DELETE',
+                url: '/deletePoll/' + pollID,
+                dataType: 'json',
+                cache: false
 	        }).done(function(json, textStatus, jqXHr) {
-	        	console.log('insert poll');
-	        }).fail(function(jqXHr, textStatus, errorThrown) {
-	            handleAjaxError(jqXHr, textStatus);
-	        }).always(function() {});
-		}
-
-		function deletePoll(data) {
-			$.ajax({
-	            type: 'DELETE',
-	            url: '/deletePoll',
-	            data: data,
-	            contentType: 'application/json; charset=utf-8',
-	            dataType: 'json',
-	            cache: false
-	        }).done(function(json, textStatus, jqXHr) {
-	        	console.log('delete poll');
+	        	$this.remove();
 	        }).fail(function(jqXHr, textStatus, errorThrown) {
 	            handleAjaxError(jqXHr, textStatus);
 	        }).always(function() {});
@@ -83,14 +147,39 @@
                 dataType: 'json',
                 cache: false
             }).done(function(json, textStatus, jqXHr) {
-            	console.log('get results');
+            	var $modal = $('#modal');
+
+            	$modal.find('.code').text(json.code);
+            	$modal.find('.number').text(json.responses.length);
             }).fail(function(jqXHr, textStatus, errorThrown) {
                 handleAjaxError(jqXHr, textStatus);
             }).always(function() {});
 		}
 
 		function manageEventHandler() {
-			
+			$('.collapsible').collapsible();
+
+			$('main #manage').on('click', '.add-poll', function() {
+				insertPoll();
+			});
+
+			$('main #manage').on('click', '.info-poll', function() {
+				var $this = $(this).closest('li.poll');
+				pollID = $this.data('ID');
+				getResults();
+			});
+
+			$('main #manage').on('click', '.edit-poll', function() {
+				var $this = $(this).closest('li.poll');
+				pollID = $this.data('ID');
+				page('/edit');
+			});
+
+			$('main #manage').on('click', '.delete-poll', function() {
+				var $this = $(this).closest('li.poll');
+				pollID = $this.data('ID');
+				deletePoll($this);
+			});
 		}
 
 		/*
@@ -100,7 +189,7 @@
 		*/
 
 		function edit() {
-
+			loadPoll();
 		}
 
 		function loadPoll() {
@@ -110,10 +199,61 @@
                 dataType: 'json',
                 cache: false
             }).done(function(json, textStatus, jqXHr) {
-            	console.log('load poll');
+            	var manageHTML = `
+            		<div id="edit" class="row">
+						<h2 class="header col s10 m8 l6">Edit Poll</h2>
+						<form class="col s10 m8 l6">
+							<div class="row">
+								<div class="input-field col s12">
+									<input value="` + json.question + `" class="question" type="text">
+									<label class="active">Question</label>
+								</div>
+							</div>
+						</form>
+						<div class="edit-actions col s10 m8 l6">
+							<a class="add-option left waves-effect waves-light btn"><i class="material-icons left">add</i>Add</a>
+							<a class="update-poll right waves-effect waves-light btn"><i class="material-icons right">send</i>Submit</a>
+						</div>
+					</div>`;
+
+				$('main .container').html(manageHTML);
+
+            	var $form = $('form');
+
+				$.each(json.options, function(i, option) {
+					var optionHTML = `
+						<div class="row">
+							<div class="input-field col s11">
+								<input value="` + option + `" class="option" type="text">
+								<label class="active">Option</label>
+							</div>
+							<div class="col s1">
+								<a class="delete-option btn-floating btn waves-effect waves-light red"><i class="material-icons">delete</i></a>
+							</div>
+						</div>`;
+
+					$form.append(optionHTML);
+				});
+
+				editEventHandler();
             }).fail(function(jqXHr, textStatus, errorThrown) {
                 handleAjaxError(jqXHr, textStatus);
             }).always(function() {});
+		}
+
+		function insertPoll() {
+			$.ajax({
+	            type: 'GET',
+	            url: '/insertPoll',
+	            contentType: 'application/json; charset=utf-8',
+	            dataType: 'json',
+	            cache: false
+	        }).done(function(json, textStatus, jqXHr) {
+	        	pollID = json.id;
+	        	page('/edit');
+	        }).fail(function(jqXHr, textStatus, errorThrown) {
+	            handleAjaxError(jqXHr, textStatus);
+	        }).always(function() {});
 		}
 
 		function updatePoll(data) {
@@ -125,14 +265,52 @@
 	            dataType: 'json',
 	            cache: false
 	        }).done(function(json, textStatus, jqXHr) {
-	        	console.log('update poll');
+	        	page('/manage');
 	        }).fail(function(jqXHr, textStatus, errorThrown) {
 	            handleAjaxError(jqXHr, textStatus);
 	        }).always(function() {});
 		}
 
 		function editEventHandler() {
-		    
+		    $('main #edit').on('click', '.add-option', function() {
+		    	var $form = $('form');
+
+		    	var optionHTML = `
+					<div class="row">
+						<div class="input-field col s11">
+							<input class="option" type="text">
+							<label>Option</label>
+						</div>
+						<div class="col s1">
+							<a class="delete-option btn-floating btn waves-effect waves-light red"><i class="material-icons">delete</i></a>
+						</div>
+					</div>`;
+
+				$form.append(optionHTML);
+		    });
+
+		    $('main #edit').on('click', '.update-poll', function() {
+		    	var array = [];
+				$('input.option').map(function() {
+				    array.push($(this).val());
+				});
+
+				var data = {
+					question: $('input.question').val(),
+					options: array
+				}
+
+		    	if (pollID == '') {
+		    		insertPoll(JSON.stringify(data));
+		    	}
+		    	else {
+		    		updatePoll(JSON.stringify(data));
+		    	}
+		    });
+
+		    $('main #edit').on('click', '.delete-option', function() {
+		    	$(this).closest('.row').remove();
+		    });
 		}
 	</script>
 

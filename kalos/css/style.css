@@ -1,0 +1,7 @@
+.collapsible .collapsible-body {
+	position: relative;
+}
+.collapsible .fixed-action-btn {
+	position: absolute;
+	top: 23px;
+}

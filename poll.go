@@ -77,6 +77,7 @@ func insertPollDB(poll *Poll) error {
 	poll.User = user
 	poll.ID = bson.NewObjectId().String()
 	poll.ID = poll.ID[13 : len(poll.ID)-2]
+	poll.Options = make([]string, 1)
 
 	return collection.Insert(poll)
 }
