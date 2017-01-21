@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/husobee/vestigo"
 )
@@ -15,9 +16,15 @@ type Page struct {
 	Viewer string
 }
 
+type Error struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
+
 const (
 	errorStatusCode = 555
 	serverName      = "GWS"
+	user            = "Lily"
 )
 
 func main() {
@@ -57,7 +64,7 @@ func main() {
 	router.Get("/", viewClient)
 
 	log.Println("Listening...")
-	if err := http.ListenAndServe(":2323", context.ClearHandler(router)); err != nil {
+	if err := http.ListenAndServe(":2323", router); err != nil {
 		log.Println(err)
 	}
 }
@@ -129,18 +136,16 @@ func viewAdmin(w http.ResponseWriter, r *http.Request) {
 func loadPolls(w http.ResponseWriter, r *http.Request) {
 	returnCode := 0
 
-	var err error
-
 	var polls []Poll
 
 	if returnCode == 0 {
-		if err = loadPollsDB(&polls); err != nil {
+		if err := loadPollsDB(&polls); err != nil {
 			returnCode = 1
 		}
 	}
 
 	if returnCode == 0 {
-		if err = json.NewEncoder(w).Encode(polls); err != nil {
+		if err := json.NewEncoder(w).Encode(polls); err != nil {
 			returnCode = 2
 		}
 	}
@@ -157,18 +162,18 @@ func loadPolls(w http.ResponseWriter, r *http.Request) {
   ========================================
 */
 
-func loadPollJSON(w http.ResponseWriter, r *http.Request) {
+func loadPoll(w http.ResponseWriter, r *http.Request) {
 	returnCode := 0
 
 	poll := new(Poll)
 	poll.ID = vestigo.Param(r, "pollID")
 
-	if err := loadEmergencyDB(emergency, id); err != nil {
+	if err := loadPollDB(poll); err != nil {
 		returnCode = 1
 	}
 
 	if returnCode == 0 {
-		if err := json.NewEncoder(w).Encode(emergency); err != nil {
+		if err := json.NewEncoder(w).Encode(poll); err != nil {
 			returnCode = 2
 		}
 	}
@@ -283,11 +288,13 @@ func submitResponse(w http.ResponseWriter, r *http.Request) {
 		returnCode = 1
 	}
 
-	if returnCode == 0 {
-		if err := submitResponseDB(poll); err != nil {
-			returnCode = 2
+	/*
+		if returnCode == 0 {
+			if err := submitResponseDB(poll); err != nil {
+				returnCode = 2
+			}
 		}
-	}
+	*/
 
 	if returnCode == 0 {
 		if err := json.NewEncoder(w).Encode(poll); err != nil {
@@ -306,3 +313,52 @@ func submitResponse(w http.ResponseWriter, r *http.Request) {
   Get Results
   ========================================
 */
+
+func getResults(w http.ResponseWriter, r *http.Request) {
+	returnCode := 0
+
+	var results []Result
+
+	/*
+		if returnCode == 0 {
+			if err = getResultsDB(&results); err != nil {
+				returnCode = 1
+			}
+		}
+	*/
+
+	if returnCode == 0 {
+		if err := json.NewEncoder(w).Encode(results); err != nil {
+			returnCode = 2
+		}
+	}
+
+	// error handling
+	if returnCode != 0 {
+		handleError(returnCode, errorStatusCode, "Results could not be gotten.", w)
+	}
+}
+
+/*
+  ========================================
+  Basics
+  ========================================
+*/
+
+func setHeader(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Cache-control", "no-cache, no-store, max-age=0, must-revalidate")
+	w.Header().Set("Expires", "Fri, 01 Jan 1990 00:00:00 GMT")
+	w.Header().Set("Server", serverName)
+}
+
+func handleError(returnCode, statusCode int, message string, w http.ResponseWriter) {
+	error := new(Error)
+	error.Code = returnCode
+	error.Message = message
+
+	w.WriteHeader(statusCode)
+	if err := json.NewEncoder(w).Encode(error); err != nil {
+		log.Println(err)
+	}
+}
