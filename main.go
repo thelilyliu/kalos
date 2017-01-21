@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"html/template"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"path"
@@ -16,11 +17,7 @@ type Page struct {
 	Viewer string
 }
 
-type BasicPoll struct {
-	Entries []BasicEntry `json:"entries"`
-}
-
-type BasicEntry struct {
+type Entry struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`
 }
@@ -67,7 +64,7 @@ func main() {
 	router.Post("/submitResponse/:pollID", submitResponse)
 	router.Get("/getResults/:pollID", getResults)
 
-	router.Get("/createPoll", createPoll)
+	router.Post("/createPoll", createPoll)
 
 	// pages
 	router.Get("/edit", viewAdmin)
@@ -81,25 +78,74 @@ func main() {
 	}
 }
 
+/*
+  ========================================
+  Lambda
+  ========================================
+*/
+
 func createPoll(w http.ResponseWriter, r *http.Request) {
-	log.Println("=== create ===")
+	log.Println("=== createPoll ===")
+
 	returnCode := 0
 
-	basicPoll := new(BasicPoll)
+	var err error
+	var entries []Entry
+	var byteSlice []byte
+	poll := new(Poll)
 
-	if err := json.NewDecoder(r.Body).Decode(basicPoll); err != nil {
+	// https://golang.org/pkg/io/ioutil/#ReadAll
+	if byteSlice, err = ioutil.ReadAll(r.Body); err != nil {
 		returnCode = 1
+		log.Println("createPoll err 1", err)
+	}
+
+	if returnCode == 0 {
+		log.Println(string(byteSlice))
+
+		// https://golang.org/pkg/encoding/json/#Unmarshal
+		if err := json.Unmarshal(byteSlice, &entries); err != nil {
+			returnCode = 2
+			log.Println("createPoll err 2", err)
+		}
+	}
+
+	if returnCode == 0 {
+		if err := insertPollDB(poll); err != nil {
+			returnCode = 3
+			log.Println("createPoll err 3", err)
+		}
+	}
+
+	if returnCode == 0 {
+		initPoll(poll, entries)
+		log.Println(*poll)
+
+		if err := updatePollDB(poll); err != nil {
+			returnCode = 4
+			log.Println("createPoll err 4", err)
+		}
 	}
 
 	if returnCode == 0 {
 		if err := json.NewEncoder(w).Encode(true); err != nil {
-			returnCode = 3
+			returnCode = 5
+			log.Println("createPoll err 5", err)
 		}
 	}
 
 	// error handling
 	if returnCode != 0 {
 		handleError(returnCode, errorStatusCode, "Poll could not be created.", w)
+	}
+}
+
+func initPoll(poll *Poll, entries []Entry) {
+	poll.Question = entries[0].Value
+	poll.Options = make([]string, len(entries)-1)
+
+	for i := 1; i <= len(entries)-1; i++ {
+		poll.Options[i-1] = entries[i].Value
 	}
 }
 
