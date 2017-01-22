@@ -1,9 +1,10 @@
 body {
 	background-color: #fcfcfc;
+	overflow-y: scroll;
 }
 
-#manage > .col {
-	
+main {
+	margin: 50px auto;
 }
 
 #manage .heading {
@@ -27,6 +28,48 @@ body {
 	font-size: 1rem;
 }
 
+
+#home {
+	position: relative;
+}
+#home > .col {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+}
 .card .row {
 	margin-bottom: 0;
+}
+.card .card-action a:not(.btn):not(.btn-large):not(.btn-floating) {
+	margin-right: 0;
+}
+
+#poll {
+	position: relative;
+}
+#poll > .col {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+}
+
+#manage {
+	position: relative;
+}
+#manage > .col {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+}
+
+#edit {
+	position: relative;
+}
+#edit > .col {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+}
+#edit .delete-option {
+	top: 10px;
 }

@@ -1,12 +1,14 @@
 package main
 
 import (
+	// "encoding/binary"
 	"encoding/json"
 	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -67,6 +69,7 @@ func main() {
 
 	// lambda
 	router.Post("/createPoll", createPoll)
+	router.Post("/viewResults", viewResults)
 
 	// pages
 	router.Get("/edit", viewAdmin)
@@ -120,7 +123,14 @@ func createPoll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if returnCode == 0 {
-		initPoll(poll, entries)
+		// initialize poll
+		poll.Question = entries[0].Value
+		poll.Options = make([]string, len(entries)-1)
+
+		for i := 1; i < len(entries); i++ {
+			poll.Options[i-1] = entries[i].Value
+		}
+
 		log.Println(*poll)
 
 		if err := updatePollDB(poll); err != nil {
@@ -130,7 +140,7 @@ func createPoll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if returnCode == 0 {
-		if err := json.NewEncoder(w).Encode(true); err != nil {
+		if err := json.NewEncoder(w).Encode(poll.Code); err != nil {
 			returnCode = 5
 			log.Println("createPoll err 5", err)
 		}
@@ -142,12 +152,48 @@ func createPoll(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func initPoll(poll *Poll, entries []Entry) {
-	poll.Question = entries[0].Value
-	poll.Options = make([]string, len(entries)-1)
+func viewResults(w http.ResponseWriter, r *http.Request) {
+	log.Println("=== viewResults ===")
 
-	for i := 1; i <= len(entries)-1; i++ {
-		poll.Options[i-1] = entries[i].Value
+	returnCode := 0
+
+	var err error
+	entry := new(Entry)
+	poll := new(Poll)
+
+	if err := json.NewDecoder(r.Body).Decode(entry); err != nil {
+		returnCode = 1
+		log.Println("viewResults err 1", err)
+	}
+
+	if returnCode == 0 {
+		if poll.Code, err = strconv.Atoi(entry.Value); err != nil {
+			returnCode = 2
+			log.Println("viewResults err 2", err)
+		}
+	}
+
+	if returnCode == 0 {
+		if err := submitCodeDB(poll); err != nil {
+			returnCode = 3
+			log.Println("viewResults err 3", err)
+		}
+	}
+
+	if returnCode == 0 {
+		generateResponsesDB(poll)
+		poll.Results = calculateResultsDB(poll.Options, poll.Responses, poll.Results)
+		log.Println(poll.Results)
+
+		if err := json.NewEncoder(w).Encode(poll); err != nil {
+			returnCode = 4
+			log.Println("viewResults err 4", err)
+		}
+	}
+
+	// error handling
+	if returnCode != 0 {
+		handleError(returnCode, errorStatusCode, "Results could not be gotten.", w)
 	}
 }
 
@@ -444,7 +490,7 @@ func getResults(w http.ResponseWriter, r *http.Request) {
 	if returnCode == 0 {
 		poll.Results = calculateResultsDB(poll.Options, poll.Responses, poll.Results)
 
-		if err := json.NewEncoder(w).Encode(poll); err != nil {
+		if err := json.NewEncoder(w).Encode(true); err != nil {
 			returnCode = 2
 		}
 	}

@@ -19,9 +19,19 @@
 	<div id="modal" class="modal">
 		<div class="modal-content">
 			<h4>Results</h4>
-			<p>Code <span class="code"></span></p>
-			<p>Number <span class="number"></span></p>
-			<p>Results <span class="results"></span></p>
+			<div class="row">
+				<div class="col s6 m5 l4">Code</div>
+				<div class="code col s6 m7 l8"></div>
+			</div>
+			<div class="row">
+				<div class="col s6 m5 l4">Number</div>
+				<div class="number col s6 m7 l8"></div>
+			</div>
+			<div class="row">
+				<div class="col s6 m5 l4">Results</div>
+				<div class="first-result col s6 m7 l8"></div>
+				<div class="second-result col s6 offset-s6 m7 offset-m5 l8 offset-l4"></div>
+			</div>
 		</div>
 	</div>
 
@@ -29,7 +39,6 @@
 
 	<script type="text/javascript">
 		$(document).ready(function() {
-
 			page('/manage', manage);
 			page('*', notFound);
 			page();
@@ -56,19 +65,15 @@
             }).done(function(json, textStatus, jqXHr) {
             	var collapsibleHTML = `
             		<div id="manage" class="row">
-            			<div class="heading col s10 m8 l6">
+            			<div class="col s10 m8 l6">
             				<div class="row">
-	            				<h3 class="header col s12">Manage Polls</h3>
+	            				<h4 class="header">Polls</h4>
 	            				<a class="add-poll right btn-floating btn-large waves-effect waves-light">
 									<i class="material-icons">add</i>
 								</a>
 	            			</div>
-	            		</div>
-	            		<div class="col s10 m8 l6">
 							<div class="row">
-								<div class="col s12">
-									<ul class="collapsible" data-collapsible="accordion"></ul>
-								</div>
+								<ul class="collapsible" data-collapsible="accordion"></ul>
 							</div>
 						</div>
 					</div>`;
@@ -103,7 +108,7 @@
 											</a>
 										</li>
 										<li>
-											<a class="info-poll btn-floating blue">
+											<a class="info-poll btn-floating blue" href="#modal">
 												<i class="material-icons">info</i>
 											</a>
 										</li>
@@ -160,6 +165,8 @@
 
             	$modal.find('.code').text(json.code);
             	$modal.find('.number').text(json.responses.length);
+            	$modal.find('.first-result').text(json.results[0].option + ' ' + json.results[0].rating);
+            	$modal.find('.second-result').text(json.results[1].option + ' ' + json.results[1].rating);
             }).fail(function(jqXHr, textStatus, errorThrown) {
                 handleAjaxError(jqXHr, textStatus);
             }).always(function() {});
@@ -188,8 +195,10 @@
 			$('main #manage').on('click', '.info-poll', function() {
 				var $this = $(this).closest('li.poll');
 				pollID = $this.data('ID');
-				generateResponses();
-				// getResults();
+				
+				// generateResponses();
+				getResults();
+				$('#modal').modal();
 			});
 
 			$('main #manage').on('click', '.edit-poll', function() {
@@ -220,22 +229,26 @@
             }).done(function(json, textStatus, jqXHr) {
             	var manageHTML = `
             		<div id="edit" class="row">
-            			<div class="heading col s10 m8 l6">
-            				<div class="row">
-								<h3 class="header col s12">Edit Poll</h3>
+            			<div class="col s10 m8 l6">
+            				<div class="heading row">
+								<h4 class="header col s12">Edit</h4>
 							</div>
-            			</div>
-						<form class="col s10 m8 l6">
-							<div class="row">
+							<form class="row">
 								<div class="input-field col s12">
 									<input value="` + json.question + `" class="question" type="text">
 									<label class="active">Question</label>
 								</div>
+							</form>
+							<div class="edit-actions row">
+								<div class="col s12">
+									<a class="add-option left waves-effect waves-light btn">
+										<i class="material-icons left">add</i>Add
+									</a>
+									<a class="update-poll right waves-effect waves-light btn">
+										<i class="material-icons right">send</i>Submit
+									</a>
+								</div>
 							</div>
-						</form>
-						<div class="edit-actions col s10 m8 l6">
-							<a class="add-option left waves-effect waves-light btn"><i class="material-icons left">add</i>Add</a>
-							<a class="update-poll right waves-effect waves-light btn"><i class="material-icons right">send</i>Submit</a>
 						</div>
 					</div>`;
 
@@ -245,14 +258,12 @@
 
 				$.each(json.options, function(i, option) {
 					var optionHTML = `
-						<div class="row">
-							<div class="input-field col s11">
-								<input value="` + option + `" class="option" type="text">
-								<label class="active">Option</label>
-							</div>
-							<div class="col s1">
-								<a class="delete-option btn-floating btn waves-effect waves-light red"><i class="material-icons">delete</i></a>
-							</div>
+						<div class="input-field col s11">
+							<input value="` + option + `" class="option" type="text">
+							<label class="active">Option</label>
+						</div>
+						<div class="col s1">
+							<a class="delete-option btn-floating btn waves-effect waves-light red"><i class="material-icons">delete</i></a>
 						</div>`;
 
 					$form.append(optionHTML);
@@ -288,7 +299,7 @@
 	            dataType: 'json',
 	            cache: false
 	        }).done(function(json, textStatus, jqXHr) {
-	        	page('/manage');
+	        	Materialize.toast('Share this code: ' + json.code, 4000);
 	        }).fail(function(jqXHr, textStatus, errorThrown) {
 	            handleAjaxError(jqXHr, textStatus);
 	        }).always(function() {});
@@ -299,14 +310,12 @@
 		    	var $form = $('form');
 
 		    	var optionHTML = `
-					<div class="row">
-						<div class="input-field col s11">
-							<input class="option" type="text">
-							<label>Option</label>
-						</div>
-						<div class="col s1">
-							<a class="delete-option btn-floating btn waves-effect waves-light red"><i class="material-icons">delete</i></a>
-						</div>
+					<div class="input-field col s11">
+						<input class="option" type="text">
+						<label>Option</label>
+					</div>
+					<div class="col s1">
+						<a class="delete-option btn-floating btn waves-effect waves-light red"><i class="material-icons">delete</i></a>
 					</div>`;
 
 				$form.append(optionHTML);
@@ -332,7 +341,9 @@
 		    });
 
 		    $('main #edit').on('click', '.delete-option', function() {
-		    	$(this).closest('.row').remove();
+		    	var $this = $(this).closest('.col');
+		    	$this.prev().remove();
+		    	$this.remove();
 		    });
 		}
 	</script>

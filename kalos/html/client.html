@@ -20,7 +20,6 @@
 
 	<script type="text/javascript">
 		$(document).ready(function() {
-			
 			page('/', home);
 			page('*', notFound);
 			page();
@@ -39,9 +38,9 @@
 			var homeHTML = `
 				<div id="home" class="row">
 					<div class="col s12 m6">
-						<div class="card blue-grey darken-1">
+						<div class="card hoverable blue-grey darken-1">
 							<div class="card-content white-text">
-								<span class="card-title">Card Title</span>
+								<span class="card-title">Join</span>
 								<div class="row">
 									<form class="col s12">
 										<div class="row">
@@ -59,8 +58,8 @@
 									</form>
 								</div>
 							</div>
-							<div class="card-action">
-								<a class="submit-code btn waves-effect waves-light">Submit
+							<div class="card-action right-align">
+								<a class="submit-code btn-flat waves-effect waves-light">Submit
 									<i class="material-icons right">send</i>
 								</a>
 							</div>
@@ -136,28 +135,27 @@
 
 			var pollHTML = `
 				<div id="poll" class="row">
-					<div class="heading col s10 m8 l6">
-						<div class="row">
-							<h3 class="header col s12">Poll</h3>
-							<h4 class="header col s12">` + json.question + `</h4>
+					<div class="col s10 m8 l6">
+						<div class="heading row">
+							<h4 class="header">` + json.question + `</h4>
 						</div>
-					</div>
-					<form class="col s10 m8 l6">
-						<div class="row"></div>
-					</form>
-					<div class="poll-actions col s10 m8 l6">
-						<a class="submit-response right waves-effect waves-light btn"><i class="material-icons right">send</i>Submit</a>
+						<form class="row"></form>
+						<div class="poll-actions row">
+							<a class="submit-response right waves-effect waves-light btn">
+								<i class="material-icons right">send</i>Submit
+							</a>
+						</div>
 					</div>
 				</div>`;
 
 			$('main .container').html(pollHTML);
 
-			var $form = $('form .row');
+			var $form = $('form');
 
 			$.each(json.options, function(i, option) {
 				var optionHTML = `
-					<h5 class="col s12">` + option + `</h5>
-					<p class="range-field col s12">
+					<h5>` + option + `</h5>
+					<p class="range-field">
 						<input class="option" type="range" min="-2" max="2" />
 					</p>`;
 
@@ -176,7 +174,7 @@
 	            dataType: 'json',
 	            cache: false
 	        }).done(function(json, textStatus, jqXHr) {
-	        	console.log('submit response');
+	        	Materialize.toast('Response successfully submitted.', 4000);
 	        }).fail(function(jqXHr, textStatus, errorThrown) {
 	            handleAjaxError(jqXHr, textStatus);
 	        }).always(function() {});
