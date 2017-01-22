@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"math/rand"
+	"time"
 )
 
 /*
@@ -163,23 +164,25 @@ func calculateResultsDB(options []string, responses []Response, results []Result
 */
 
 func generateResponsesDB(poll *Poll) {
-	number := 4 + rand.Intn(7)
-	poll.Responses = make([]Response, number)
+	s1 := rand.NewSource(time.Now().UnixNano())
+	r1 := rand.New(s1)
+
+	number := 4 + r1.Intn(7)
+	responses := make([]Response, number)
 	options := len(poll.Options)
 
 	for i := 0; i < number; i++ {
-		poll.Responses[i].Name = "a"
-		poll.Responses[i].Ratings = make([]float64, options)
+		responses[i].Ratings = make([]float64, options)
 
 		for j := 0; j < options; j++ {
-			rating := -2 + rand.Intn(5)
-			poll.Responses[i].Ratings[j] = float64(rating)
+			rating := -2 + r1.Intn(5)
+			responses[i].Ratings[j] = float64(rating)
 		}
 
-		response := poll.Responses[i]
+		response := responses[i]
 
 		if err := submitResponseDB(poll.ID, &response); err != nil {
-			log.Println("generate responses error")
+			log.Println("generate responses error", err)
 		}
 	}
 }

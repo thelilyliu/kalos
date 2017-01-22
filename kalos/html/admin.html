@@ -18,19 +18,21 @@
 
 	<div id="modal" class="modal">
 		<div class="modal-content">
-			<h4>Results</h4>
 			<div class="row">
-				<div class="col s6 m5 l4">Code</div>
-				<div class="code col s6 m7 l8"></div>
+				<h4 class="header col s12">Results</h4>
 			</div>
 			<div class="row">
-				<div class="col s6 m5 l4">Number</div>
-				<div class="number col s6 m7 l8"></div>
+				<div class="col s4">Code</div>
+				<div class="code col s8"></div>
 			</div>
 			<div class="row">
-				<div class="col s6 m5 l4">Results</div>
-				<div class="first-result col s6 m7 l8"></div>
-				<div class="second-result col s6 offset-s6 m7 offset-m5 l8 offset-l4"></div>
+				<div class="col s4">Number</div>
+				<div class="number col s8"></div>
+			</div>
+			<div class="row">
+				<div class="col s4">Results</div>
+				<div class="first-result col s8"></div>
+				<div class="second-result col offset-s4 s8"></div>
 			</div>
 		</div>
 	</div>
@@ -39,7 +41,7 @@
 
 	<script type="text/javascript">
 		$(document).ready(function() {
-			page('/manage', manage);
+			page('/manage', loadPolls);
 			page('*', notFound);
 			page();
 		});
@@ -52,10 +54,6 @@
 		  ========================================
 		*/
 
-		function manage() {
-			loadPolls();
-		}
-
 		function loadPolls() {
 			$.ajax({
                 type: 'GET',
@@ -64,11 +62,11 @@
                 cache: false
             }).done(function(json, textStatus, jqXHr) {
             	var collapsibleHTML = `
-            		<div id="manage" class="row">
+            		<div id="manage" class="main-section row">
             			<div class="col s10 m8 l6">
-            				<div class="row">
+            				<div class="valign-wrapper row">
 	            				<h4 class="header">Polls</h4>
-	            				<a class="add-poll right btn-floating btn-large waves-effect waves-light">
+	            				<a class="add-poll valign right btn-floating btn-large waves-effect waves-light">
 									<i class="material-icons">add</i>
 								</a>
 	            			</div>
@@ -85,9 +83,7 @@
 				$.each(json, function(i, poll) {
 					var liHTML = `
 						<li class="poll">
-							<div class="collapsible-header">
-								<i class="material-icons">filter_drama</i>` + poll.question + `
-							</div>
+							<div class="collapsible-header truncate">` + poll.question + `</div>
 							<div class="collapsible-body">
 								<form>
 									<p></p>
@@ -165,8 +161,8 @@
 
             	$modal.find('.code').text(json.code);
             	$modal.find('.number').text(json.responses.length);
-            	$modal.find('.first-result').text(json.results[0].option + ' ' + json.results[0].rating);
-            	$modal.find('.second-result').text(json.results[1].option + ' ' + json.results[1].rating);
+            	$modal.find('.first-result').text(json.results[0].option + ' – ' + json.results[0].rating);
+            	$modal.find('.second-result').text(json.results[1].option + ' – ' + json.results[1].rating);
             }).fail(function(jqXHr, textStatus, errorThrown) {
                 handleAjaxError(jqXHr, textStatus);
             }).always(function() {});
@@ -187,6 +183,7 @@
 
 		function manageEventHandler() {
 			$('.collapsible').collapsible();
+			$('nav .left').hide();
 
 			$('main #manage').on('click', '.add-poll', function() {
 				insertPoll();
@@ -263,7 +260,9 @@
 							<label class="active">Option</label>
 						</div>
 						<div class="col s1">
-							<a class="delete-option btn-floating btn waves-effect waves-light red"><i class="material-icons">delete</i></a>
+							<a class="delete-option btn-floating btn waves-effect waves-light red">
+								<i class="material-icons">clear</i>
+							</a>
 						</div>`;
 
 					$form.append(optionHTML);
@@ -306,6 +305,11 @@
 		}
 
 		function editEventHandler() {
+			$('nav .left').show();
+			$('nav').on('click', '.left li', function() {
+				loadPolls();
+			});
+
 		    $('main #edit').on('click', '.add-option', function() {
 		    	var $form = $('form');
 

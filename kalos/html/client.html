@@ -69,32 +69,7 @@
 
 			$('main .container').html(homeHTML);
 
-			// createPoll();
-
 			homeEventHandler();
-		}
-
-		function createPoll() {
-			var array = [{'name': 'question', 'value': 'myQuestion'}, {'name': 'option', 'value': 'myOption'}];
-			
-			var data = {
-	    		entries: array
-	    	}
-
-	    	var myJSON = JSON.stringify(array);
-
-			$.ajax({
-	            type: 'POST',
-	            url: '/createPoll',
-	            data: myJSON,
-	            contentType: 'application/json; charset=utf-8',
-	            dataType: 'json',
-	            cache: false
-	        }).done(function(json, textStatus, jqXHr) {
-	        	console.log(json);
-	        }).fail(function(jqXHr, textStatus, errorThrown) {
-	            handleAjaxError(jqXHr, textStatus);
-	        }).always(function() {});
 		}
 
 		function submitCode(data) {
@@ -113,6 +88,8 @@
 		}
 
 		function homeEventHandler() {
+			$('nav .left').hide();
+
 			$('main #home').on('click', '.submit-code', function() {
 				name = $('input.name').val();
 
@@ -181,6 +158,11 @@
 		}
 
 		function pollEventHandler() {
+			$('nav .left').show();
+			$('nav').on('click', '.left li', function() {
+				home();
+			});
+
 		    $('main #poll').on('click', '.submit-response', function() {
 		    	var array = [];
 				$('input.option').map(function() {

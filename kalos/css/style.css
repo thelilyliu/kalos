@@ -2,74 +2,67 @@ body {
 	background-color: #fcfcfc;
 	overflow-y: scroll;
 }
-
 main {
 	margin: 50px auto;
 }
 
-#manage .heading {
-	position: relative;
+.header {
+	color: #ee6e73;
 }
-#manage .add-poll {
-	position: absolute;
-	right: 0;
-	top: 1.46rem;
-}
-
-.collapsible .collapsible-body {
-	position: relative;
-}
-.collapsible .fixed-action-btn {
-	position: absolute;
-	top: 23px;
-}
-
 .input-field label.active {
 	font-size: 1rem;
 }
 
-
-#home {
-	position: relative;
-}
-#home > .col {
-	position: absolute;
-	left: 50%;
-	transform: translateX(-50%);
-}
-.card .row {
-	margin-bottom: 0;
-}
-.card .card-action a:not(.btn):not(.btn-large):not(.btn-floating) {
-	margin-right: 0;
-}
-
-#poll {
-	position: relative;
-}
-#poll > .col {
-	position: absolute;
-	left: 50%;
-	transform: translateX(-50%);
-}
-
-#manage {
-	position: relative;
-}
-#manage > .col {
-	position: absolute;
-	left: 50%;
-	transform: translateX(-50%);
-}
-
+#home,
+#poll,
+#manage,
 #edit {
 	position: relative;
 }
+#home > .col,
+#poll > .col,
+#manage > .col,
 #edit > .col {
 	position: absolute;
 	left: 50%;
 	transform: translateX(-50%);
 }
+
+#home .card .row {
+	margin-bottom: 0;
+}
+#home .card .card-action a:not(.btn):not(.btn-large):not(.btn-floating) {
+	margin-right: 0;
+}
+
+#manage .valign-wrapper {
+	position: relative;
+}
+#manage .valign-wrapper .btn-floating {
+	position: absolute;
+	right: 0;
+}
+#manage .fixed-action-btn.horizontal ul li {
+	margin: 8px 6px;
+}
+#manage .collapsible .collapsible-body {
+	position: relative;
+}
+#manage .collapsible .fixed-action-btn {
+	position: absolute;
+	top: 23px;
+}
+
+#modal {
+	max-width: 400px;
+}
+#modal h4 {
+	margin-top: 20px;
+}
+#modal .col:not(h4) {
+	font-size: 18px;
+}
+
 #edit .delete-option {
 	top: 10px;
 }

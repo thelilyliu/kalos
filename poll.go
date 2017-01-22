@@ -74,11 +74,13 @@ func insertPollDB(poll *Poll) error {
 
 	timeEST := time.Now().Add(-4 * time.Hour)
 	poll.Time = timeEST.Format("20060102150405")
+	s1 := rand.NewSource(time.Now().UnixNano())
+	r1 := rand.New(s1)
 
 	poll.User = user
 	poll.ID = bson.NewObjectId().String()
 	poll.ID = poll.ID[13 : len(poll.ID)-2]
-	poll.Code = 1000 + rand.Intn(9000)
+	poll.Code = 1000 + r1.Intn(9000)
 	poll.Options = make([]string, 1)
 
 	return collection.Insert(poll)

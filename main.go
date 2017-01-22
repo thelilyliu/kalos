@@ -1,7 +1,6 @@
 package main
 
 import (
-	// "encoding/binary"
 	"encoding/json"
 	"html/template"
 	"io/ioutil"
@@ -32,7 +31,7 @@ type Error struct {
 const (
 	errorStatusCode = 555
 	serverName      = "GWS"
-	user            = "Lily"
+	user            = "Admin"
 )
 
 func main() {
@@ -330,8 +329,14 @@ func insertPoll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if returnCode == 0 {
-		if err := json.NewEncoder(w).Encode(poll); err != nil {
+		if err := loadPollDB(poll); err != nil {
 			returnCode = 2
+		}
+	}
+
+	if returnCode == 0 {
+		if err := json.NewEncoder(w).Encode(poll); err != nil {
+			returnCode = 3
 		}
 	}
 
@@ -364,8 +369,14 @@ func updatePoll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if returnCode == 0 {
-		if err := json.NewEncoder(w).Encode(poll); err != nil {
+		if err := loadPollDB(poll); err != nil {
 			returnCode = 3
+		}
+	}
+
+	if returnCode == 0 {
+		if err := json.NewEncoder(w).Encode(poll); err != nil {
+			returnCode = 4
 		}
 	}
 
@@ -490,7 +501,7 @@ func getResults(w http.ResponseWriter, r *http.Request) {
 	if returnCode == 0 {
 		poll.Results = calculateResultsDB(poll.Options, poll.Responses, poll.Results)
 
-		if err := json.NewEncoder(w).Encode(true); err != nil {
+		if err := json.NewEncoder(w).Encode(poll); err != nil {
 			returnCode = 2
 		}
 	}
